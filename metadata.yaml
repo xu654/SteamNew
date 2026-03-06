@@ -1,6 +1,6 @@
 id: SteamNEW
 name: SteamNEW
 author: xu654
-version: 1.0.2
+version: 1.0.3
 description: 获取 Steam 近期发售游戏（/new），支持 Cron 定时推送到指定群号
 repo: https://github.com/xu654/SteamNEW
