@@ -18,8 +18,7 @@ def build_game_chain(
     show_release = bool(fs.get("release_date", True))
     show_review = bool(fs.get("review", True))
 
-    chain: List[Any] = []
-    chain.append(Comp.Plain("📅近期发售\n\n"))
+    chain: List[Any] = [Comp.Plain("📅近期发售\n\n")]
 
     for i, g in enumerate(games, start=1):
         if show_cover and g.capsule_url:
@@ -29,16 +28,12 @@ def build_game_chain(
 
         if show_name:
             lines.append(f"游戏名称: {g.name}")
-
         if show_appid:
             lines.append(f"AppID: {g.appid}")
-
         if show_release and g.release_date:
             lines.append(f"发售时间: {g.release_date}")
-
         if show_link:
             lines.append(f"商店链接: {g.store_url}")
-
         if show_review and g.review_text:
             lines.append(f"评价: {g.review_text}")
 
@@ -53,6 +48,10 @@ def build_forward_nodes(
     bot_name: str = "SteamNEW",
     bot_uin: int = 10000,
 ):
+    """
+    整个结果只生成一个 Node
+    这样群里看到的是一条合并转发，点开后只有一个节点内容
+    """
     fs = field_switch or {}
 
     show_cover = bool(fs.get("cover", True))
@@ -62,19 +61,9 @@ def build_forward_nodes(
     show_release = bool(fs.get("release_date", True))
     show_review = bool(fs.get("review", True))
 
-    nodes: List[Any] = []
-
-    nodes.append(
-        Comp.Node(
-            uin=bot_uin,
-            name=bot_name,
-            content=[Comp.Plain("📅近期发售")]
-        )
-    )
+    content: List[Any] = [Comp.Plain("📅近期发售\n\n")]
 
     for i, g in enumerate(games, start=1):
-        content: List[Any] = []
-
         if show_cover and g.capsule_url:
             content.append(Comp.Image.fromURL(g.capsule_url))
 
@@ -82,27 +71,21 @@ def build_forward_nodes(
 
         if show_name:
             lines.append(f"游戏名称: {g.name}")
-
         if show_appid:
             lines.append(f"AppID: {g.appid}")
-
         if show_release and g.release_date:
             lines.append(f"发售时间: {g.release_date}")
-
         if show_link:
             lines.append(f"商店链接: {g.store_url}")
-
         if show_review and g.review_text:
             lines.append(f"评价: {g.review_text}")
 
-        content.append(Comp.Plain("\n".join(lines)))
+        content.append(Comp.Plain("\n".join(lines) + "\n\n"))
 
-        nodes.append(
-            Comp.Node(
-                uin=bot_uin,
-                name=bot_name,
-                content=content
-            )
+    return [
+        Comp.Node(
+            uin=bot_uin,
+            name=bot_name,
+            content=content
         )
-
-    return nodes
+    ]

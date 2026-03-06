@@ -115,6 +115,8 @@ class SteamNEW(Star):
         self._cron_task = asyncio.create_task(self._cron_loop())
 
     async def _cron_loop(self):
+        logger.info(f"[SteamNEW] cron loop 启动: task={id(asyncio.current_task())}")
+
         try:
             cron = croniter(self.cron_time)
         except Exception as e:
@@ -123,17 +125,22 @@ class SteamNEW(Star):
 
         while True:
             try:
-                next_time = cron.get_next(datetime)
                 now = datetime.now()
+                next_time = cron.get_next(datetime)
                 wait_seconds = (next_time - now).total_seconds()
+
+                logger.info(
+                    f"[SteamNEW] 下次推送: {next_time.strftime('%Y-%m-%d %H:%M:%S')}（等待 {wait_seconds:.0f}s）"
+                )
+
                 if wait_seconds > 0:
-                    logger.info(f"[SteamNEW] 下次推送: {next_time.strftime('%Y-%m-%d %H:%M:%S')}（等待 {wait_seconds:.0f}s）")
                     await asyncio.sleep(wait_seconds)
 
+                logger.info("[SteamNEW] cron 到点，开始执行推送")
                 await self._cron_push_once()
 
             except asyncio.CancelledError:
-                logger.info("[SteamNEW] cron loop cancelled")
+                logger.info(f"[SteamNEW] cron loop cancelled: task={id(asyncio.current_task())}")
                 break
             except Exception as e:
                 logger.error(f"[SteamNEW] cron loop 异常: {e}，60 秒后重试")
