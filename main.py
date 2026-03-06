@@ -11,9 +11,8 @@ from astrbot.api.event import filter, AstrMessageEvent, MessageChain
 from astrbot.api.star import Context, Star, StarTools, register
 
 from .utils.steam_web import fetch_html, parse_recent_games
-from .utils.join import build_game_chain
+from .utils.join import build_game_chain, build_forward_nodes
 from .utils.subscribe import remember_group_umo, resolve_umo
-
 @register(
     "SteamNEW",
     "xu654",
@@ -32,6 +31,8 @@ class SteamNEW(Star):
         self.user_agent: str = str(config.get("user_agent", "") or "")
 
         self.cron_time: str = str(config.get("cron_time", "") or "").strip()
+        self.send_mode: str = str(config.get("send_mode", "normal") or "normal").strip().lower()
+        self.forward_fallback_to_normal: bool = bool(config.get("forward_fallback_to_normal", True))
         push_group_ids_raw = config.get("push_group_ids", [])
         if isinstance(push_group_ids_raw, list):
             self.push_group_ids: list[str] = [str(x).strip() for x in push_group_ids_raw if str(x).strip()]
@@ -104,8 +105,8 @@ class SteamNEW(Star):
         n = max(1, min(self.top_n, 50))
         top_games = games[:n]
 
-        chain = build_game_chain(top_games, field_switch=self.field_switch)
-        yield event.chain_result(chain)
+        async for result in self._send_by_mode_event(event, top_games):
+            yield result
 
     # ========== 定时任务 ==========
     def _start_cron_task(self):
@@ -170,19 +171,53 @@ class SteamNEW(Star):
 
         n = max(1, min(self.top_n, 50))
         top_games = games[:n]
-        # chain = build_game_chain(top_games, field_switch=self.field_switch)
-        chain_list = build_game_chain(top_games, field_switch=self.field_switch)
-
-        message_chain = MessageChain(chain=chain_list)  # ✅ 关键
 
         for umo in targets:
             try:
-                await self.context.send_message(umo, message_chain)
+                await self._send_by_mode_umo(umo, top_games)
             except Exception as e:
                 logger.error(f"[SteamNEW] 主动推送失败 umo={umo}: {e}")
-        # # 主动发送
-        # for umo in targets:
-        #     try:
-        #         await self.context.send_message(umo, chain)
-        #     except Exception as e:
-        #         logger.error(f"[SteamNEW] 主动推送失败 umo={umo}: {e}")
+    async def _send_by_mode_event(self, event: AstrMessageEvent, games):
+        """
+        给命令 /new 用：按配置决定普通消息 or 合并转发
+        """
+        if self.send_mode == "forward":
+            try:
+                nodes = build_forward_nodes(
+                    games,
+                    field_switch=self.field_switch,
+                    bot_name="SteamNEW",
+                    bot_uin=10000,
+                )
+                yield event.chain_result(nodes)
+                return
+            except Exception as e:
+                logger.warning(f"[SteamNEW] forward 发送失败: {e}")
+                if not self.forward_fallback_to_normal:
+                    yield event.plain_result("合并转发发送失败。")
+                    return
+
+        chain = build_game_chain(games, field_switch=self.field_switch)
+        yield event.chain_result(chain)
+
+    async def _send_by_mode_umo(self, umo: str, games):
+        """
+        给定时推送用：按配置决定普通消息 or 合并转发
+        """
+        if self.send_mode == "forward":
+            try:
+                nodes = build_forward_nodes(
+                    games,
+                    field_switch=self.field_switch,
+                    bot_name="SteamNEW",
+                    bot_uin=10000,
+                )
+                await self.context.send_message(umo, MessageChain(chain=nodes))
+                return
+            except Exception as e:
+                logger.warning(f"[SteamNEW] forward 主动推送失败，回退 normal: {e}")
+                if not self.forward_fallback_to_normal:
+                    return
+
+        chain_list = build_game_chain(games, field_switch=self.field_switch)
+        await self.context.send_message(umo, MessageChain(chain=chain_list))

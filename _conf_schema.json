@@ -16,24 +16,58 @@
   },
   "cron_time": {
     "type": "string",
-    "description": "定时推送 Cron 表达式（为空则不启用）",
+    "description": "定时推送 Cron 表达式，留空则不启用",
     "default": ""
   },
   "push_group_ids": {
     "type": "list",
-    "description": "需要推送的 QQ 群号列表（对应 /sid 的 会话 ID）",
+    "description": "需要推送的 QQ 群号列表（/sid 里的会话 ID）",
     "default": []
+  },
+  "send_mode": {
+    "type": "string",
+    "description": "发送模式：normal=普通消息，forward=合并转发",
+    "default": "normal"
+  },
+  "forward_fallback_to_normal": {
+    "type": "bool",
+    "description": "合并转发失败时是否自动回退为普通消息",
+    "default": true
   },
   "field_switch": {
     "type": "object",
     "description": "返回字段开关",
     "items": {
-      "cover": { "type": "bool", "description": "封面图", "default": true },
-      "name": { "type": "bool", "description": "游戏名称", "default": true },
-      "appid": { "type": "bool", "description": "AppID", "default": true },
-      "link": { "type": "bool", "description": "商店链接", "default": true },
-      "release_date": { "type": "bool", "description": "发售时间", "default": true },
-      "review": { "type": "bool", "description": "评价信息（有则带）", "default": true }
+      "cover": {
+        "type": "bool",
+        "description": "封面图",
+        "default": true
+      },
+      "name": {
+        "type": "bool",
+        "description": "游戏名称",
+        "default": true
+      },
+      "appid": {
+        "type": "bool",
+        "description": "AppID",
+        "default": true
+      },
+      "link": {
+        "type": "bool",
+        "description": "商店链接",
+        "default": true
+      },
+      "release_date": {
+        "type": "bool",
+        "description": "发售时间",
+        "default": true
+      },
+      "review": {
+        "type": "bool",
+        "description": "评价信息",
+        "default": true
+      }
     },
     "default": {}
   },
