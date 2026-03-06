@@ -1,0 +1,173 @@
+我想要做一个astrbot插件，命名为SteamNEW
+
+功能如下
+
+https://store.steampowered.com/search/?sort_by=Released_DESC&supportedlang=schinese%2Ctchinese&category1=998&os=win&hidef2p=1&ndl=1
+
+这个链接是可以返回Steam近期发售的游戏信息
+
+网页结构源码我下面发给你，注意设置浏览器请求头，避免被封禁
+
+我要的是这样的指令
+
+/new
+
+可以获取网页内容，然后选取前10个游戏返回，这个具体返回多少个游戏，可以在webui中作为参数来设置
+
+然后还有就是可以设置定时推送，需要具体设置在哪个群组id中推送
+
+
+目前发送这个自带的指令/sid，会返回这个
+
+
+UMO: 「hello:GroupMessage:1051089388」 此值可用于设置白名单。
+UID: 「1708784409」 此值可用于设置管理员。
+消息会话来源信息:
+  机器人 ID: 「hello」
+  消息类型: 「GroupMessage」
+  会话 ID: 「1051089388」
+消息来源可用于配置机器人的配置文件路由。
+
+其中的  会话 ID: 「1051089388」，就是qq群号，所以我希望可以靠这个来区分，在哪个群里定时推送
+
+还要可以设置推送时间，用cron 表达式来设置，也是在webui中设置
+
+注意，每个游戏，只需要返回，封面图，游戏名称，游戏appid，游戏商店链接，发售时间即可
+
+下面是网页源码中与需要的内容相关的部分
+
+https://store.steampowered.com/search/?sort_by=Released_DESC&supportedlang=schinese%2Ctchinese&category1=998&os=win&hidef2p=1&ndl=1
+
+
+<div id="search_result_container" >
+
+	<div class="search_rule"></div>
+
+	
+        <!-- Extra empty div to hack around IE7 layout bug -->
+        <div></div>
+        <!-- End Extra empty div -->
+
+		<div data-panel="{&quot;maintainY&quot;:true,&quot;bFocusRingRoot&quot;:true,&quot;flow-children&quot;:&quot;column&quot;}" id="search_resultsRows">
+			
+<!-- List Items -->
+
+				<a href="https://store.steampowered.com/app/2487300/Docked/?snr=1_7_7_230_150_1"
+			 data-ds-appid="2487300" data-ds-itemkey="App_2487300" data-ds-tagids="[599,3968,4175,255534,12472,9204,4182]" data-ds-crtrids="[32513338]" onmouseover="GameHover( this, event, 'global_hover', {&quot;type&quot;:&quot;app&quot;,&quot;id&quot;:2487300,&quot;public&quot;:1,&quot;v6&quot;:1} );" onmouseout="HideGameHover( this, event, 'global_hover' )" class="search_result_row ds_collapse_flag "
+		   data-search-page="1" data-gpnav="item"
+		   data-ds-steam-deck-compat-handled="true">
+            <div class="search_capsule"><img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2487300/fec43113c04742c971dac2567284ee1f91be8f8d/capsule_231x87.jpg?t=1772715385" ></div>
+            <div class="responsive_search_name_combined">
+                <div class="search_name ellipsis">
+                    <span class="title">Docked</span>
+                </div>
+				<div class="search_platforms">
+					<span class="platform_img win"></span>				</div>
+                <div class="search_released responsive_secondrow">
+                    2026 年 3 月 5 日                </div>
+                <div class="search_reviewscore responsive_secondrow">
+                                    </div>
+
+
+                <div class="search_price_discount_combined responsive_secondrow" data-price-final="19900">
+                    <div class="search_discount_and_price responsive_secondrow">
+                        <div class="discount_block search_discount_block no_discount" data-price-final="19900" data-bundlediscount="0" data-discount="0"><div class="discount_prices"><div class="discount_final_price">HK$ 199.00</div></div></div>                    </div>
+                </div>
+            </div>
+
+        </a>
+            
+				<a href="https://store.steampowered.com/app/4261400/_/?snr=1_7_7_230_150_1"
+			 data-ds-appid="4261400" data-ds-itemkey="App_4261400" data-ds-tagids="[1663,3839,1774,4182,4345,4667,492]" data-ds-descids="[2,5]" data-ds-crtrids="[45499399]" onmouseover="GameHover( this, event, 'global_hover', {&quot;type&quot;:&quot;app&quot;,&quot;id&quot;:4261400,&quot;public&quot;:1,&quot;v6&quot;:1} );" onmouseout="HideGameHover( this, event, 'global_hover' )" class="search_result_row ds_collapse_flag "
+		   data-search-page="1" data-gpnav="item"
+		   data-ds-steam-deck-compat-handled="true">
+            <div class="search_capsule"><img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/4261400/c9bab4608b2268f3b92705aad48277519877038e/capsule_231x87_schinese.jpg?t=1772712636" ></div>
+            <div class="responsive_search_name_combined">
+                <div class="search_name ellipsis">
+                    <span class="title">火力全开</span>
+                </div>
+				<div class="search_platforms">
+					<span class="platform_img win"></span>				</div>
+                <div class="search_released responsive_secondrow">
+                    2026 年 3 月 5 日                </div>
+                <div class="search_reviewscore responsive_secondrow">
+                                    </div>
+
+
+                <div class="search_price_discount_combined responsive_secondrow" data-price-final="3120">
+                    <div class="search_discount_and_price responsive_secondrow">
+                        <div class="discount_block search_discount_block" data-price-final="3120" data-bundlediscount="0" data-discount="20" role="link" aria-label="立省 20%。原价为 HK$ 39.00，折后为 HK$ 31.20。"><div class="discount_pct">-20%</div><div class="discount_prices"><div class="discount_original_price">HK$ 39.00</div><div class="discount_final_price">HK$ 31.20</div></div></div>                    </div>
+                </div>
+            </div>
+
+        </a>
+            
+				<a href="https://store.steampowered.com/app/1450900/_Desynced/?snr=1_7_7_230_150_1"
+			 data-ds-appid="1450900" data-ds-itemkey="App_1450900" data-ds-tagids="[9,255534,5432,7332,3810,4328,599]" data-ds-crtrids="[43340987,44298189,42658688]" onmouseover="GameHover( this, event, 'global_hover', {&quot;type&quot;:&quot;app&quot;,&quot;id&quot;:1450900,&quot;public&quot;:1,&quot;v6&quot;:1} );" onmouseout="HideGameHover( this, event, 'global_hover' )" class="search_result_row ds_collapse_flag "
+		   data-search-page="1" data-gpnav="item"
+		   data-ds-steam-deck-compat-handled="true">
+            <div class="search_capsule"><img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1450900/fd5746512d39f94719ea61b885bb283bb020b3a2/capsule_231x87_schinese.jpg?t=1772712329" ></div>
+            <div class="responsive_search_name_combined">
+                <div class="search_name ellipsis">
+                    <span class="title">智械工厂 Desynced</span>
+                </div>
+				<div class="search_platforms">
+					<span class="platform_img win"></span>				</div>
+                <div class="search_released responsive_secondrow">
+                    2026 年 3 月 5 日                </div>
+                <div class="search_reviewscore responsive_secondrow">
+                                            <span class="search_review_summary positive" data-tooltip-html="特别好评&lt;br&gt;此游戏的 1,376 篇用户评测中有 82% 为好评。"></span>
+                                    </div>
+
+
+                <div class="search_price_discount_combined responsive_secondrow" data-price-final="11220">
+                    <div class="search_discount_and_price responsive_secondrow">
+                        <div class="discount_block search_discount_block" data-price-final="11220" data-bundlediscount="0" data-discount="40" role="link" aria-label="立省 40%。原价为 HK$ 187.00，折后为 HK$ 112.20。"><div class="discount_pct">-40%</div><div class="discount_prices"><div class="discount_original_price">HK$ 187.00</div><div class="discount_final_price">HK$ 112.20</div></div></div>                    </div>
+                </div>
+            </div>
+
+        </a>
+            
+				<a href="https://store.steampowered.com/app/2963600/_/?snr=1_7_7_230_150_1"
+			 data-ds-appid="2963600" data-ds-itemkey="App_2963600" data-ds-tagids="[1666,12472,1662,9,3959,791774,17389]" data-ds-crtrids="[39220934]" onmouseover="GameHover( this, event, 'global_hover', {&quot;type&quot;:&quot;app&quot;,&quot;id&quot;:2963600,&quot;public&quot;:1,&quot;v6&quot;:1} );" onmouseout="HideGameHover( this, event, 'global_hover' )" class="search_result_row ds_collapse_flag "
+		   data-search-page="1" data-gpnav="item"
+		   data-ds-steam-deck-compat-handled="true">
+            <div class="search_capsule"><img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2963600/a55266ac1f295780f423fa43897bb0afe9a6fd99/capsule_231x87_schinese.jpg?t=1772704845" ></div>
+            <div class="responsive_search_name_combined">
+                <div class="search_name ellipsis">
+                    <span class="title">卡牌修仙传</span>
+                </div>
+				<div class="search_platforms">
+					<span class="platform_img win"></span>				</div>
+                <div class="search_released responsive_secondrow">
+                    2026 年 3 月 5 日                </div>
+                <div class="search_reviewscore responsive_secondrow">
+                                            <span class="search_review_summary mixed" data-tooltip-html="褒贬不一&lt;br&gt;此游戏的 16 篇用户评测中有 68% 为好评。"></span>
+                                    </div>
+
+
+                <div class="search_price_discount_combined responsive_secondrow" data-price-final="8550">
+                    <div class="search_discount_and_price responsive_secondrow">
+                        <div class="discount_block search_discount_block" data-price-final="8550" data-bundlediscount="0" data-discount="10" role="link" aria-label="立省 10%。原价为 HK$ 95.00，折后为 HK$ 85.50。"><div class="discount_pct">-10%</div><div class="discount_prices"><div class="discount_original_price">HK$ 95.00</div><div class="discount_final_price">HK$ 85.50</div></div></div>                    </div>
+                </div>
+            </div>
+
+        </a>
+
+就是上述这种结构，然后呢search_capsule，这个后面的链接，就是封面图，如果有评价信息的话，把评价信息也带上吧
+
+
+关于具体返回哪些内容，也需要在webui中可以设置，比如后续不想返回什么了，可以关闭
+
+
+我建立的项目结构如下
+
+SteamNew/
+    main.py
+    _conf_schema.json
+    metadata.yaml
+    requirements.txt
+    utils/
+        steam_web.py        # 负责请求网页，然后解析内容
+        join.py             # 负责拼接要返回的数据
+        subscribe.py        # 负责管理订阅

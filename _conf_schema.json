@@ -1,0 +1,45 @@
+{
+  "fetch_url": {
+    "type": "string",
+    "description": "Steam 近期发售页面 URL",
+    "default": "https://store.steampowered.com/search/?sort_by=Released_DESC&supportedlang=schinese%2Ctchinese&category1=998&os=win&hidef2p=1&ndl=1"
+  },
+  "top_n": {
+    "type": "int",
+    "description": "/new 返回前 N 个游戏",
+    "default": 10
+  },
+  "timeout_sec": {
+    "type": "int",
+    "description": "请求超时（秒）",
+    "default": 15
+  },
+  "cron_time": {
+    "type": "string",
+    "description": "定时推送 Cron 表达式（为空则不启用）",
+    "default": ""
+  },
+  "push_group_ids": {
+    "type": "list",
+    "description": "需要推送的 QQ 群号列表（对应 /sid 的 会话 ID）",
+    "default": []
+  },
+  "field_switch": {
+    "type": "object",
+    "description": "返回字段开关",
+    "items": {
+      "cover": { "type": "bool", "description": "封面图", "default": true },
+      "name": { "type": "bool", "description": "游戏名称", "default": true },
+      "appid": { "type": "bool", "description": "AppID", "default": true },
+      "link": { "type": "bool", "description": "商店链接", "default": true },
+      "release_date": { "type": "bool", "description": "发售时间", "default": true },
+      "review": { "type": "bool", "description": "评价信息（有则带）", "default": true }
+    },
+    "default": {}
+  },
+  "user_agent": {
+    "type": "string",
+    "description": "自定义 UA（留空则使用内置 UA）",
+    "default": ""
+  }
+}
