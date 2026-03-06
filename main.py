@@ -117,24 +117,27 @@ class SteamNEW(Star):
     async def _cron_loop(self):
         logger.info(f"[SteamNEW] cron loop 启动: task={id(asyncio.current_task())}")
 
-        try:
-            cron = croniter(self.cron_time)
-        except Exception as e:
-            logger.error(f"[SteamNEW] 无效 cron 表达式 '{self.cron_time}': {e}")
-            return
-
         while True:
             try:
                 now = datetime.now()
-                next_time = cron.get_next(datetime)
+
+                # 每次都以“当前时间”为基准重新计算下一次执行时间
+                next_time = croniter(self.cron_time, now).get_next(datetime)
                 wait_seconds = (next_time - now).total_seconds()
 
                 logger.info(
                     f"[SteamNEW] 下次推送: {next_time.strftime('%Y-%m-%d %H:%M:%S')}（等待 {wait_seconds:.0f}s）"
                 )
 
-                if wait_seconds > 0:
-                    await asyncio.sleep(wait_seconds)
+                # 理论上这里应该永远 > 0，保险起见再保护一下
+                if wait_seconds <= 0:
+                    logger.warning(
+                        f"[SteamNEW] 计算出的等待时间异常: {wait_seconds:.0f}s，跳过本轮并在 60 秒后重算"
+                    )
+                    await asyncio.sleep(60)
+                    continue
+
+                await asyncio.sleep(wait_seconds)
 
                 logger.info("[SteamNEW] cron 到点，开始执行推送")
                 await self._cron_push_once()
@@ -145,7 +148,7 @@ class SteamNEW(Star):
             except Exception as e:
                 logger.error(f"[SteamNEW] cron loop 异常: {e}，60 秒后重试")
                 await asyncio.sleep(60)
-
+                
     async def _cron_push_once(self):
         # 解析目标：按群号查 UMO
         targets: list[str] = []
